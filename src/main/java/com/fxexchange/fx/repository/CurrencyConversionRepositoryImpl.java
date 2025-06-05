@@ -29,7 +29,6 @@ public class CurrencyConversionRepositoryImpl implements CurrencyConversionRepos
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-        // Query for data
         CriteriaQuery<CurrencyConversion> cq = cb.createQuery(CurrencyConversion.class);
         Root<CurrencyConversion> root = cq.from(CurrencyConversion.class);
 
@@ -58,7 +57,6 @@ public class CurrencyConversionRepositoryImpl implements CurrencyConversionRepos
             throw new ResourceNotFoundException("No conversion found for the given criteria.");
         }
 
-        // Query for total count
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<CurrencyConversion> countRoot = countQuery.from(CurrencyConversion.class);
         countQuery.select(cb.count(countRoot));

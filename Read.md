@@ -59,10 +59,14 @@ src
 └── main
     ├── java
     │   └── com.fxexchange.fx
+    │       ├── config         # Configs
     │       ├── controller     # REST endpoints
-    │       ├── service        # Business logic
+    │       ├── dao            # JPA entities
     │       ├── dto            # Data Transfer Objects
-    │       ├── model          # JPA entities
+    │       ├── exception      # Exceptions
+    │       ├── external       # External Apis
+    │       ├── mapper         # Mapstruct Interface
+    │       ├── service        # Business logic
     │       └── repository     # Database access layer
     └── resources
         └── application.yml    # Configuration (port, DB, etc.)

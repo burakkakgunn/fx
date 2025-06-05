@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  fx-exchange-app:
+    image: fx-exchange:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_ADDRESS=0.0.0.0
+    restart: unless-stopped

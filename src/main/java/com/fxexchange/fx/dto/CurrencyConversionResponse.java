@@ -13,8 +13,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CurrencyConversionResponse {
-
-    private BigDecimal originalAmount;
+    private Long id;
+    private String transactionId;
+    private BigDecimal amount;
     private String sourceCurrency;
     private String targetCurrency;
     private BigDecimal convertedAmount;

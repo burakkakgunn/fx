@@ -3,8 +3,10 @@ package com.fxexchange.fx.service;
 import com.fxexchange.fx.config.FxConversionProperties;
 import com.fxexchange.fx.dao.CurrencyConversion;
 import com.fxexchange.fx.dto.ConversionHistoryRequest;
+import com.fxexchange.fx.dto.CurrencyConversionDto;
 import com.fxexchange.fx.dto.CurrencyConversionRequest;
 import com.fxexchange.fx.dto.CurrencyConversionResponse;
+import com.fxexchange.fx.mapper.CurrencyConversionMapper;
 import com.fxexchange.fx.repository.CurrencyConversionRepository;
 import com.fxexchange.fx.repository.CurrencyConversionRepositoryCustom;
 import org.apache.commons.csv.CSVFormat;
@@ -29,20 +31,19 @@ import java.util.UUID;
 public class CurrencyConversionService {
 
     private final ExchangeRateService exchangeRateService;
-    private CurrencyConversionStrategy selectedStrategy;
-    private final FxConversionProperties properties;
     private final CurrencyConversionContext conversionContext;
     private final CurrencyConversionRepository repository;
     private  final CurrencyConversionRepositoryCustom currencyConversionRepositoryCustom;
+    private final CurrencyConversionMapper currencyConversionMapper;
 
-    public CurrencyConversionService(ExchangeRateService exchangeRateService, CurrencyConversionStrategy selectedStrategy, FxConversionProperties properties, CurrencyConversionContext conversionContext, CurrencyConversionRepository repository, CurrencyConversionRepositoryCustom currencyConversionRepositoryCustom) {
+    public CurrencyConversionService(ExchangeRateService exchangeRateService, FxConversionProperties properties, CurrencyConversionContext conversionContext, CurrencyConversionRepository repository, CurrencyConversionRepositoryCustom currencyConversionRepositoryCustom,
+                                     CurrencyConversionMapper currencyConversionMapper) {
         this.exchangeRateService = exchangeRateService;
-        this.selectedStrategy = selectedStrategy;
-        this.properties = properties;
         this.conversionContext = conversionContext;
         this.conversionContext.setStrategy(properties.getStrategy());
         this.repository = repository;
         this.currencyConversionRepositoryCustom = currencyConversionRepositoryCustom;
+        this.currencyConversionMapper = currencyConversionMapper;
     }
 
 
@@ -63,12 +64,12 @@ public class CurrencyConversionService {
 
         repository.save(conversion);
 
-        return new CurrencyConversionResponse(request.getAmount(), request.getSourceCurrency(), request.getTargetCurrency(),convertedAmount,conversion.getTransactionDate());
+        return new CurrencyConversionResponse(conversion.getId(),transactionId,request.getAmount(), request.getSourceCurrency(), request.getTargetCurrency(),convertedAmount,conversion.getTransactionDate());
     }
 
-    public Page<CurrencyConversion> getConversionHistory(ConversionHistoryRequest conversionHistoryRequest) {
-
-        return currencyConversionRepositoryCustom.findByCriteria(conversionHistoryRequest.getTransactionId(), conversionHistoryRequest.getTransactionDate(), PageRequest.of(conversionHistoryRequest.getPage(), conversionHistoryRequest.getSize()));
+    public Page<CurrencyConversionDto> getConversionHistory(ConversionHistoryRequest conversionHistoryRequest) {
+        Page<CurrencyConversion> currencyPage = currencyConversionRepositoryCustom.findByCriteria(conversionHistoryRequest.getTransactionId(), conversionHistoryRequest.getTransactionDate(), PageRequest.of(conversionHistoryRequest.getPage(), conversionHistoryRequest.getSize()));
+        return currencyPage.map(currencyConversionMapper::toDto);
     }
 
     public List<CurrencyConversionResponse> processCsvFile(MultipartFile file) {
@@ -96,11 +97,11 @@ public class CurrencyConversionService {
                         .withTrim()
                         .parse(reader)
         ) {
-            for (CSVRecord record : csvParser) {
+            for (CSVRecord csvRecord : csvParser) {
                 CurrencyConversionRequest request = new CurrencyConversionRequest();
-                request.setAmount(new BigDecimal(record.get("amount")));
-                request.setSourceCurrency(record.get("sourceCurrency"));
-                request.setTargetCurrency(record.get("targetCurrency"));
+                request.setAmount(new BigDecimal(csvRecord.get("amount")));
+                request.setSourceCurrency(csvRecord.get("sourceCurrency"));
+                request.setTargetCurrency(csvRecord.get("targetCurrency"));
                 conversionRequests.add(request);
             }
         } catch (Exception e) {

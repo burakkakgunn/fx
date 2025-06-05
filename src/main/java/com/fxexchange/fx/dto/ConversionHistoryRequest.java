@@ -16,8 +16,8 @@ public class ConversionHistoryRequest {
     private String transactionId;
 
     private LocalDate transactionDate;
-
+    @Builder.Default
     private int page = 0;
-
+    @Builder.Default
     private int size = 10;
 }

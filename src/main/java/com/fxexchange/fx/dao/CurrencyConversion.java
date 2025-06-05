@@ -1,9 +1,6 @@
 package com.fxexchange.fx.dao;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +14,10 @@ import java.time.LocalDateTime;
 public class CurrencyConversion {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, unique = true, length = 36)
+    private Long id;
+
     @Column(name = "transaction_id", nullable = false, unique = true, length = 36)
     private String transactionId;
 

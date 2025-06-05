@@ -5,35 +5,36 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Component
 @Slf4j
 public class ApiLayerExchangeRateClient {
-    private final WebClient webClient;
+
+    private final RestTemplate restTemplate = new RestTemplate();
     private final String accessKey;
 
-    public ApiLayerExchangeRateClient(WebClient.Builder webClientBuilder,
-                                      @Value("${apilayer.access-key}") String accessKey) {
-        this.webClient = webClientBuilder
-                .baseUrl("https://apilayer.net/api")
-                .build();
+    public ApiLayerExchangeRateClient(@Value("${apilayer.access-key}") String accessKey) {
         this.accessKey = accessKey;
     }
+
     @Cacheable(value = "exchangeRates", key = "#source + '_' + #target")
     public ApiLayerResponse getExchangeRate(String source, String target) {
-        ApiLayerResponse response = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/live")
-                        .queryParam("access_key", accessKey)
-                        .queryParam("source", source)
-                        .queryParam("currencies", target)
-                        .queryParam("format", 1)
-                        .build())
-                .retrieve()
-                .bodyToMono(ApiLayerResponse.class)
-                .block();
-        log.info("exchangeRateServiceCalled");
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl("https://apilayer.net/api/live")
+                .queryParam("access_key", accessKey)
+                .queryParam("source", source)
+                .queryParam("currencies", target)
+                .queryParam("format", 1)
+                .build()
+                .toUri();
+
+        log.info("Calling exchange rate service for {} to {}", source, target);
+        ApiLayerResponse response = restTemplate.getForObject(uri, ApiLayerResponse.class);
+
         if (response == null || !response.success() || !response.quotes().containsKey(source + target)) {
             throw new IllegalArgumentException("Rate not found for: " + source + " to " + target);
         }

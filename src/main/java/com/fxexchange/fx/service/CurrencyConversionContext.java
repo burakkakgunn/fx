@@ -14,7 +14,6 @@ public class CurrencyConversionContext {
         this.strategies = strategies;
     }
 
-    // Config veya servis tarafından çağrılacak, strategyKey ile stratejiyi set et
     public void setStrategy(String strategyKey) {
         CurrencyConversionStrategy strategy = strategies.get(strategyKey);
         if (strategy == null) {
@@ -23,16 +22,11 @@ public class CurrencyConversionContext {
         this.selectedStrategy = strategy;
     }
 
-    // artık parametre almadan sadece seçilmiş stratejiyle çeviri yap
     public BigDecimal convert(BigDecimal amount, String source, String target) {
         if (selectedStrategy == null) {
             throw new IllegalStateException("Conversion strategy not set");
         }
         return selectedStrategy.convert(amount, source, target);
-    }
-
-    public CurrencyConversionStrategy getSelectedStrategy() {
-        return selectedStrategy;
     }
 
 }
